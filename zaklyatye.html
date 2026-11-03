@@ -836,7 +836,7 @@ function rules(){
 }
 
 /* ---------------- ПРИЛОЖЕНИЕ НА ЭКРАНЕ ТЕЛЕФОНА ---------------- */
-// window.ZK_PWA выставляет сервер: только там есть манифест, иконки и офлайн-режим
+// window.ZK_PWA выставляет сборка для GitHub Pages (scripts/build-pages.mjs): только там есть манифест, иконки и офлайн-режим
 const PWA = !!window.ZK_PWA && !tg;
 const standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
 const UA = navigator.userAgent;
@@ -887,7 +887,9 @@ function phoneHTML(os){
     <div class="scr s3">${iconRow}</div>
     <div class="finger" id="finger">${ink('hand')}</div></div>`;
 }
-const ICON = '/icons/icon-192.png';
+const ICON = 'icons/icon-192.png';
+// адрес приложения без ?source=app и прочего: на GitHub Pages он заканчивается на /Aap_Zaklyatie/
+const appUrl = () => new URL('./', location.href).href;
 let guideTimer = null;
 function install(first){
   let os = isAndroid ? 'android' : 'ios';
@@ -946,12 +948,12 @@ function install(first){
   render();
 }
 async function copyLink(){
-  const url = location.origin + '/';
+  const url = appUrl();
   try{await navigator.clipboard.writeText(url);toast('Ссылка скопирована')}
   catch(e){toast(url)}
 }
 async function inviteFriends(){
-  const url = location.origin + '/';
+  const url = appUrl();
   sfx('tap');
   if(navigator.share){
     try{await navigator.share({title:'Заклятые',text:'Сыграем? Две колоды: белая сплачивает, чёрная ссорит.',url});return}catch(e){if(e.name==='AbortError')return}

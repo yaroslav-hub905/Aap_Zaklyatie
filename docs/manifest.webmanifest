@@ -1,0 +1,30 @@
+{
+  "name": "Заклятые",
+  "short_name": "Заклятые",
+  "description": "Карточная игра для компании: белая колода сплачивает, чёрная ссорит.",
+  "lang": "ru",
+  "start_url": "./?source=app",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#ecebe5",
+  "theme_color": "#ecebe5",
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

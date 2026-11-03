@@ -5,7 +5,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "start": "node bot/server.mjs"
+    "start": "node bot/server.mjs",
+    "build": "node scripts/build-pages.mjs"
   },
   "engines": {
     "node": ">=20"
