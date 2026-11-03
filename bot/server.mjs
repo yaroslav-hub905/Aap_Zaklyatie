@@ -1,0 +1,209 @@
+// Заклятые — Telegram-бот + мини-приложение. Без зависимостей, нужен Node 20+.
+// Переменные окружения:
+//   BOT_TOKEN   — токен от @BotFather (без него запускается только сайт с игрой)
+//   WEBAPP_URL  — публичный https-адрес игры; на Railway берётся сам из RAILWAY_PUBLIC_DOMAIN
+//   PORT        — порт веб-сервера (Railway задаёт сам)
+import http from 'node:http';
+import { readFile } from 'node:fs/promises';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const TOKEN = process.env.BOT_TOKEN || '';
+const PORT = Number(process.env.PORT) || 3000;
+const WEBAPP_URL = (process.env.WEBAPP_URL ||
+  (process.env.RAILWAY_PUBLIC_DOMAIN ? `https://${process.env.RAILWAY_PUBLIC_DOMAIN}` : '')).replace(/\/$/, '');
+
+/* ---------------- сайт с игрой ---------------- */
+// zaklyatye.html — единственный источник игры; здесь он оборачивается в полноценную страницу
+// и получает скрипт Telegram, который включает кнопку «назад», вибрацию и цвета шапки.
+async function gamePage() {
+  const body = await readFile(path.join(ROOT, 'zaklyatye.html'), 'utf8');
+  return `<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#ecebe5">
+<meta name="description" content="Заклятые — карточная игра для компании: белая колода сплачивает, чёрная ссорит.">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Заклятые">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta property="og:title" content="Заклятые">
+<meta property="og:description" content="Две колоды на одну компанию. Белая сплачивает, чёрная ссорит.">
+<meta property="og:image" content="/cover.png">
+<script>window.ZK_PWA=true;if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(()=>{}));</script>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+${body}
+</body>
+</html>`;
+}
+
+/* ---------------- приложение на экране телефона (PWA) ---------------- */
+const VERSION = (process.env.RAILWAY_GIT_COMMIT_SHA || String(Date.now())).slice(0, 12);
+const MANIFEST = JSON.stringify({
+  name: 'Заклятые',
+  short_name: 'Заклятые',
+  description: 'Карточная игра для компании: белая колода сплачивает, чёрная ссорит.',
+  lang: 'ru',
+  start_url: '/?source=app',
+  scope: '/',
+  display: 'standalone',
+  orientation: 'portrait',
+  background_color: '#ecebe5',
+  theme_color: '#ecebe5',
+  icons: [
+    { src: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' },
+    { src: '/icons/icon-512.png', sizes: '512x512', type: 'image/png' },
+    { src: '/icons/maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+  ],
+});
+// Офлайн: страница — сначала из сети (чтобы обновления приходили сразу), шрифты и иконки — из кэша
+const SW = `const C='zk-${VERSION}';
+const CORE=['/','/icons/icon-192.png','/icons/icon-512.png','/icons/apple-touch-icon.png'];
+self.addEventListener('install',e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(CORE)).then(()=>self.skipWaiting()))});
+self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==C).map(k=>caches.delete(k)))).then(()=>self.clients.claim()))});
+self.addEventListener('fetch',e=>{
+  const r=e.request; if(r.method!=='GET')return;
+  const u=new URL(r.url);
+  if(r.mode==='navigate'){e.respondWith(fetch(r).then(res=>{const cp=res.clone();caches.open(C).then(c=>c.put('/',cp));return res}).catch(()=>caches.match('/')));return}
+  if(u.origin===location.origin||/fonts\\.(googleapis|gstatic)\\.com$/.test(u.hostname)){
+    e.respondWith(caches.match(r).then(hit=>hit||fetch(r).then(res=>{if(res.ok||res.type==='opaque'){const cp=res.clone();caches.open(C).then(c=>c.put(r,cp))}return res})));
+  }
+});`;
+const ICONS = new Set(['icon-192.png', 'icon-512.png', 'maskable-512.png', 'apple-touch-icon.png']);
+
+const server = http.createServer(async (req, res) => {
+  const url = new URL(req.url, 'http://x');
+  try {
+    if (url.pathname === '/' || url.pathname === '/index.html') {
+      res.writeHead(200, { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-cache' });
+      return res.end(await gamePage());
+    }
+    if (url.pathname === '/cover.png') {
+      res.writeHead(200, { 'content-type': 'image/png', 'cache-control': 'public, max-age=86400' });
+      return res.end(await readFile(path.join(ROOT, 'bot', 'cover.png')));
+    }
+    if (url.pathname === '/manifest.webmanifest') {
+      res.writeHead(200, { 'content-type': 'application/manifest+json; charset=utf-8' });
+      return res.end(MANIFEST);
+    }
+    if (url.pathname === '/sw.js') {
+      res.writeHead(200, { 'content-type': 'text/javascript; charset=utf-8', 'cache-control': 'no-cache', 'service-worker-allowed': '/' });
+      return res.end(SW);
+    }
+    const icon = url.pathname.match(/^\/icons\/([\w-]+\.png)$/);
+    if (icon && ICONS.has(icon[1])) {
+      res.writeHead(200, { 'content-type': 'image/png', 'cache-control': 'public, max-age=604800' });
+      return res.end(await readFile(path.join(ROOT, 'bot', 'icons', icon[1])));
+    }
+    if (url.pathname === '/health') { res.writeHead(200); return res.end('ok'); }
+    res.writeHead(404, { 'content-type': 'text/plain; charset=utf-8' }); res.end('Не найдено');
+  } catch (e) {
+    console.error(e);
+    res.writeHead(500); res.end('Ошибка сервера');
+  }
+});
+server.listen(PORT, () => console.log(`Игра: http://localhost:${PORT}  ·  публичный адрес: ${WEBAPP_URL || 'не задан'}`));
+
+/* ---------------- бот ---------------- */
+const api = async (method, payload, isForm = false) => {
+  const r = await fetch(`https://api.telegram.org/bot${TOKEN}/${method}`, isForm
+    ? { method: 'POST', body: payload }
+    : { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(payload || {}) });
+  const j = await r.json();
+  if (!j.ok) throw new Error(`${method}: ${j.description}`);
+  return j.result;
+};
+
+const playButton = (text = 'Открыть колоды') => ({ inline_keyboard: [
+  [{ text, web_app: { url: WEBAPP_URL } }],
+  [{ text: '📲 Поставить на экран телефона', url: WEBAPP_URL + '/' }],
+] });
+
+const WELCOME = `<b>Заклятые</b> · игра для своих
+
+Две колоды на одну компанию.
+<b>Клятва</b> — белая: признания, комплименты, тёплые задания.
+<b>Проклятие</b> — чёрная: неудобные вопросы и задания, которые понравятся не всем.
+
+Смешайте колоды, впишите имена и передавайте телефон по кругу.
+
+Хотите отдельное приложение с иконкой на экране? Нажмите «Поставить на экран телефона» — внутри будет инструкция. Эту же ссылку можно отправить друзьям.`;
+
+const RULES = `<b>Как играть</b>
+
+1. Соберитесь: от 2 до 12 человек, впишите имена.
+2. Выберите режим: <i>Мир</i> — только белая, <i>Война</i> — только чёрная, <i>Смесь</i> — обе в одной куче, <i>Выбор</i> — каждый решает сам.
+3. В свой ход коснись колоды и прочитай карту вслух.
+4. Выполнил: белая +1, чёрная +2. Отказ от белой — тянешь чёрную, отказ от чёрной — минус очко.
+5. Стоп-слово «пас» без штрафа, если задание задевает всерьёз.
+
+Побеждает тот, кто первым наберёт выбранное число очков.`;
+
+let coverFileId = null;
+async function sendWelcome(chatId) {
+  const extra = { caption: WELCOME, parse_mode: 'HTML', reply_markup: playButton() };
+  if (coverFileId) return api('sendPhoto', { chat_id: chatId, photo: coverFileId, ...extra });
+  const form = new FormData();
+  form.append('chat_id', String(chatId));
+  form.append('photo', new Blob([await readFile(path.join(ROOT, 'bot', 'cover.png'))], { type: 'image/png' }), 'cover.png');
+  for (const [k, v] of Object.entries(extra)) form.append(k, typeof v === 'string' ? v : JSON.stringify(v));
+  const msg = await api('sendPhoto', form, true);
+  coverFileId = msg.photo.at(-1).file_id;
+}
+
+async function onUpdate(u) {
+  const m = u.message;
+  if (!m || !m.text) return;
+  const cmd = m.text.split(/[\s@]/)[0];
+  if (cmd === '/start' || cmd === '/play') return sendWelcome(m.chat.id);
+  if (cmd === '/app') return api('sendMessage', { chat_id: m.chat.id, text: `Ссылка на приложение — откройте её в Safari или Chrome и следуйте инструкции на экране:\n${WEBAPP_URL}/\n\nЕё же можно отправить друзьям.`, reply_markup: { inline_keyboard: [[{ text: '📲 Открыть в браузере', url: WEBAPP_URL + '/' }]] } });
+  if (cmd === '/rules') return api('sendMessage', { chat_id: m.chat.id, text: RULES, parse_mode: 'HTML', reply_markup: playButton('Играть') });
+  return api('sendMessage', { chat_id: m.chat.id, text: 'Карты ждут на столе 👇', reply_markup: playButton('Играть') });
+}
+
+async function setupBot() {
+  await api('deleteWebhook', { drop_pending_updates: false });
+  await api('setMyCommands', { commands: [
+    { command: 'start', description: 'Открыть игру' },
+    { command: 'rules', description: 'Правила' },
+    { command: 'app', description: 'Поставить игру на экран телефона' },
+  ] });
+  await api('setMyShortDescription', { short_description: 'Две колоды на одну компанию: белая сплачивает, чёрная ссорит.' });
+  await api('setMyDescription', { description: 'Заклятые — карточная игра для друзей. Белая колода «Клятва» сплачивает, чёрная «Проклятие» проверяет дружбу на прочность. Колоды можно смешивать.' });
+  await api('setChatMenuButton', { menu_button: { type: 'web_app', text: 'Играть', web_app: { url: WEBAPP_URL } } });
+}
+
+async function poll() {
+  let offset = 0;
+  for (;;) {
+    try {
+      const updates = await api('getUpdates', { offset, timeout: 30, allowed_updates: ['message'] });
+      for (const u of updates) {
+        offset = u.update_id + 1;
+        onUpdate(u).catch(e => console.error('update', e.message));
+      }
+    } catch (e) {
+      console.error('poll', e.message);
+      await new Promise(r => setTimeout(r, 3000));
+    }
+  }
+}
+
+if (!TOKEN) {
+  console.warn('BOT_TOKEN не задан — работает только сайт с игрой.');
+} else if (!WEBAPP_URL.startsWith('https://')) {
+  console.warn('WEBAPP_URL должен начинаться с https:// — Telegram открывает мини-приложения только по https. Бот не запущен.');
+} else {
+  setupBot()
+    .then(() => { console.log('Бот запущен'); poll(); })
+    .catch(e => { console.error('Не удалось настроить бота:', e.message); process.exit(1); });
+}

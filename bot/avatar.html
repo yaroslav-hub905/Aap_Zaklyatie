@@ -1,0 +1,41 @@
+<!doctype html>
+<!-- Аватарка бота 640×640. Telegram обрезает её в круг, поэтому всё важное — в центре. Пересборка: см. README, раздел «Аватарка» -->
+<html lang="ru"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Amatic+SC:wght@700&display=swap" rel="stylesheet">
+<style>
+html,body{margin:0;width:640px;height:640px;overflow:hidden;background:#ecebe5}
+body{position:relative}
+.grain{position:absolute;inset:0;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.09 0 0 0 0 0.08 0 0 0 0 0.08 0 0 0 .5 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='.4'/%3E%3C/svg%3E")}
+svg{position:absolute;inset:0;width:640px;height:640px}
+.s{fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round}
+</style></head>
+<body>
+<div class="grain"></div>
+<svg viewBox="0 0 300 300" style="color:#171615">
+  <defs><filter id="r"><feTurbulence type="fractalNoise" baseFrequency=".03" numOctaves="2" seed="4"/><feDisplacementMap in="SourceGraphic" scale="3"/></filter></defs>
+  <g filter="url(#r)">
+    <g id="rays" class="s" style="stroke-width:2.2;opacity:.5"></g>
+    <circle class="s" cx="150" cy="150" r="124" style="stroke-width:3.4"/>
+    <circle class="s" cx="150" cy="150" r="115" style="stroke-width:1.4;stroke-dasharray:3 7"/>
+    <g transform="rotate(-14 150 158) translate(-30 0)">
+      <rect x="104" y="86" width="92" height="138" rx="11" fill="#f7f6f2" stroke="#171615" stroke-width="4"/>
+      <rect x="111" y="93" width="78" height="124" rx="7" class="s" style="stroke-width:1.8"/>
+      <g transform="translate(115 120) scale(.7)" class="s" style="stroke-width:5"><path d="M50 80C22 61 17 35 34 29c9-3 15 3 16 10 1-7 7-13 16-10 17 6 12 32-16 51z"/></g>
+    </g>
+    <g transform="rotate(14 150 158) translate(30 4)" style="color:#efeee8">
+      <rect x="104" y="86" width="92" height="138" rx="11" fill="#1b1a19" stroke="#171615" stroke-width="4"/>
+      <rect x="111" y="93" width="78" height="124" rx="7" class="s" style="stroke-width:1.8"/>
+      <g transform="translate(115 118) scale(.7)" class="s" style="stroke-width:5"><path d="M57 10L30 54h18l-9 36 33-48H53l11-32z"/></g>
+    </g>
+  </g>
+  <g transform="translate(184 188) scale(.72)">
+    <path d="M50 6c9 0 12 6 20 8s14 4 16 12-2 14 0 22 6 14 0 22-14 6-20 12-11 12-20 12-12-8-20-10-14-6-16-14 2-14-2-22-6-14 0-22 14-6 20-12S41 6 50 6z" fill="#a8281f"/>
+    <circle cx="50" cy="50" r="27" fill="none" stroke="#7d1b14" stroke-width="3"/>
+    <text x="50" y="63" text-anchor="middle" font-family="Amatic SC, cursive" font-weight="700" font-size="44" fill="#f2d9d2">З</text>
+  </g>
+</svg>
+<script>
+let d='';for(let i=0;i<28;i++){const a=i/28*Math.PI*2;d+=`M${150+Math.cos(a)*92} ${150+Math.sin(a)*92}L${150+Math.cos(a)*106} ${150+Math.sin(a)*106}`}
+document.getElementById('rays').innerHTML=`<path d="${d}"/>`;
+</script>
+</body></html>
