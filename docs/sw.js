@@ -1,4 +1,4 @@
-const C='zk-202611030038';
+const C='zk-202611051334';
 const BASE=self.registration.scope;
 const CORE=['./','icons/icon-192.png','icons/icon-512.png','icons/apple-touch-icon.png'].map(p=>new URL(p,BASE).href);
 self.addEventListener('install',e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(CORE)).then(()=>self.skipWaiting()))});
