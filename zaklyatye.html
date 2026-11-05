@@ -325,6 +325,32 @@ body.b3 .boil{filter:url(#r3)}
 @keyframes ping{from{opacity:1;transform:scale(.6)}to{opacity:0;transform:scale(1.5)}}
 @keyframes glow{50%{outline-color:transparent}}
 @keyframes icon-pop{to{transform:none}}
+/* ТАЙМЕР И 18+ */
+.badges{display:flex;gap:4px}
+.badge{font:600 8px/1 var(--f-mono);letter-spacing:.08em;padding:3px 5px;border:1.2px solid currentColor;border-radius:6px}
+.badge.r{background:var(--seal);border-color:var(--seal);color:#f2d9d2}
+.timer{display:flex;align-items:center;gap:12px;width:100%;border:0;background:none;padding:8px 4px;text-align:left;animation:rise .5s .25s both}
+.timer svg{width:52px;height:52px;flex:none;transform:rotate(-90deg)}
+.timer circle{fill:none;stroke-width:4}
+.timer .bg{stroke:var(--line)}
+.timer .fg{stroke:var(--ink);stroke-linecap:round;stroke-dasharray:125.66;stroke-dashoffset:0;transition:stroke-dashoffset 1s linear,stroke .3s}
+.timer .num{position:absolute;inset:0;display:grid;place-items:center;font:700 22px/1 var(--f-display)}
+.timer .ring{position:relative;width:52px;height:52px;flex:none}
+.timer .lbl{font-size:19px;text-decoration:underline;text-decoration-style:wavy;text-decoration-color:var(--seal);text-underline-offset:5px}
+.timer.run .lbl{text-decoration:none}
+.timer.hurry .fg{stroke:var(--seal)}
+.timer.hurry .num{color:var(--seal);animation:bump .5s}
+.timer.over .num{color:var(--seal)}
+.toggle{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;border:2px solid var(--ink);border-radius:14px 10px 16px 9px/9px 16px 10px 14px;background:none;padding:10px 14px;text-align:left}
+.toggle .t{font:700 26px/1 var(--f-display);letter-spacing:.03em}
+.toggle .d{font-size:16px;color:var(--ink-soft);margin-top:2px}
+.toggle .sw{flex:none;width:52px;height:30px;border-radius:20px;border:2px solid var(--ink);position:relative;transition:background .25s}
+.toggle .sw::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:var(--ink);transition:transform .3s cubic-bezier(.3,1.5,.5,1)}
+.toggle[aria-pressed="true"]{background:var(--char);color:var(--chalk);border-color:var(--char)}
+.toggle[aria-pressed="true"] .d{color:rgba(239,238,232,.7)}
+.toggle[aria-pressed="true"] .sw{background:var(--seal);border-color:var(--seal)}
+.toggle[aria-pressed="true"] .sw::after{transform:translateX(22px);background:#f2d9d2}
+.row .a18{color:var(--seal);font-weight:600}
 /* в Telegram «назад» — системная кнопка в шапке */
 body.tg #back,body.tg #quit{visibility:hidden}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
@@ -346,42 +372,67 @@ body.tg #back,body.tg #quit{visibility:hidden}
 <script>
 /* ---------------- КАРТЫ ---------------- */
 // t: q — вопрос, a — действие, all — всем, c — выбор. {p} — случайный другой игрок
+// s — таймер в секундах, a18 — карта только для режима 18+
 const DECK = {
 white: [
  {t:'q',x:'Какой момент с этой компанией ты бы прожил ещё раз?'},
  {t:'q',x:'Что в {p} зацепило тебя с первой встречи?'},
- {t:'q',x:'За что ты можешь сказать спасибо каждому за столом? По одной фразе на человека.'},
  {t:'q',x:'Кому из нас ты позвонишь в 3 ночи, если всё пойдёт не так?'},
  {t:'q',x:'Какая черта {p} пригодилась бы тебе самому?'},
  {t:'q',x:'Расскажи, как вы познакомились с {p}, так, как ты это помнишь.'},
  {t:'q',x:'Какой комплимент ты услышал так давно, что помнишь его до сих пор?'},
  {t:'q',x:'С кем из нас ты бы уехал в путешествие без плана и почему?'},
  {t:'q',x:'Какую суперсилу ты бы выдал {p}?'},
- {t:'q',x:'Какую песню ты бы посвятил этой компании? Можно напеть.'},
  {t:'q',x:'Когда ты в последний раз гордился кем-то из нас?'},
  {t:'q',x:'Что ты давно хотел сказать {p}, но не решался? Только хорошее.'},
  {t:'q',x:'Какой поступок {p} тебя приятно удивил?'},
+ {t:'q',x:'Чему ты научился у {p}?'},
+ {t:'q',x:'Какой день с нами был лучшим в этом году?'},
+ {t:'q',x:'За что ты благодарен себе прошлому?'},
+ {t:'q',x:'Какую традицию ты бы завёл в нашей компании?'},
+ {t:'q',x:'Кто из нас изменил тебя сильнее всех? Как?'},
+ {t:'q',x:'Что ты сделал бы, если бы точно знал, что не облажаешься?'},
+ {t:'q',x:'Когда {p} поддержал тебя так, что ты это запомнил?'},
+ {t:'q',x:'О чём ты мечтал в детстве и сбылось ли это?'},
+ {t:'q',x:'Какой твой самый смелый поступок?'},
+ {t:'q',x:'Чем бы ты занимался, если бы деньги не были проблемой?'},
+ {t:'q',x:'Какой фильм или книга изменили твой взгляд на жизнь?'},
+ {t:'q',x:'В какой момент ты понял, что эти люди — твои?'},
+ {t:'q',x:'Что в тебе самом тебе нравится больше всего?'},
+ {t:'q',x:'Каким ты видишь {p} через 10 лет?'},
  {t:'a',x:'Назови {p} три вещи, за которые ты ценишь этого человека.'},
  {t:'a',x:'Сделай {p} самый искренний комплимент, какой сможешь. Без шуток.'},
- {t:'a',x:'Обними того, кого считаешь самым милым за этим столом.'},
+ {t:'a',x:'Обними того, кого считаешь самым милым за этим столом. Не отпускай 10 секунд.',s:10},
  {t:'a',x:'Придумай {p} ласковое прозвище. Оно действует до конца игры.'},
- {t:'a',x:'Напиши {p} тёплое сообщение прямо сейчас, хоть вы и сидите рядом.'},
+ {t:'a',x:'Напиши {p} тёплое сообщение прямо сейчас, хоть вы и сидите рядом.',s:60},
  {t:'a',x:'Расскажи историю, где {p} тебя выручил.'},
- {t:'a',x:'Дай пять каждому и скажи каждому по одному доброму слову.'},
+ {t:'a',x:'Дай пять каждому и скажи каждому по одному доброму слову.',s:30},
  {t:'a',x:'Сделай комплимент внешности игрока слева и характеру игрока справа.'},
- {t:'a',x:'Пообещай {p} одно маленькое доброе дело на этой неделе. Все — свидетели.'},
+ {t:'a',x:'Пообещай {p} одно доброе дело на этой неделе. Все — свидетели.'},
  {t:'a',x:'Скажи тост за {p}. Минимум три предложения.'},
- {t:'a',x:'Минута славы: 30 секунд перечисляй, почему {p} крутой человек.'},
+ {t:'a',x:'Минута славы: перечисляй, почему {p} крутой человек, пока не кончится время.',s:30},
  {t:'a',x:'Подари {p} что-нибудь из своих карманов на память.'},
+ {t:'a',x:'Нарисуй портрет {p} за 30 секунд и подари ему.',s:30},
+ {t:'a',x:'Спой {p} куплет любой песни про любовь или дружбу.',s:30},
+ {t:'a',x:'Смотрите с {p} друг другу в глаза. Первый, кто засмеётся, проиграл.',s:30},
+ {t:'a',x:'Сделай {p} массаж плеч.',s:60},
+ {t:'a',x:'Отправь в общий чат голосовое о том, как ты всех любишь.',s:30},
+ {t:'a',x:'Изобрази без слов, как вы с {p} познакомились. Остальные угадывают.',s:45},
+ {t:'a',x:'Назови 5 причин, почему без {p} эта компания была бы скучнее.',s:20},
+ {t:'a',x:'Позвони маме или близкому человеку и скажи, что любишь его.',s:60},
  {t:'all',x:'По кругу: одно слово, которое лучше всего описывает эту компанию.'},
- {t:'all',x:'Общее фото прямо сейчас. Самая смешная поза получает +1.'},
+ {t:'all',x:'Общее фото прямо сейчас. Самая смешная поза получает +1.',s:30},
  {t:'all',x:'Каждый называет лучшее качество игрока справа.'},
  {t:'all',x:'На счёт три все показывают на самого доброго за столом. Он получает +1.'},
  {t:'all',x:'По кругу: самое смешное общее воспоминание. Кто рассмешит всех — +1.'},
- {t:'all',x:'Групповое объятие. Кто откажется, тянет чёрную карту.'},
- {t:'all',x:'За 60 секунд придумайте название для вашей компании.'},
+ {t:'all',x:'Групповое объятие. Кто откажется, тянет чёрную карту.',s:10},
+ {t:'all',x:'Придумайте название для вашей компании, пока идёт время.',s:60},
  {t:'all',x:'Каждый рассказывает, чему научился у кого-то из присутствующих.'},
- {t:'all',x:'Каждый говорит, кого из сидящих знает дольше всех и как всё началось.'},
+ {t:'all',x:'Придумайте вместе общий жест-приветствие для компании.',s:60},
+ {t:'all',x:'Каждый говорит, за что благодарен этому вечеру.'},
+ {t:'all',x:'Запланируйте вместе следующую встречу: дата, место, план.',s:90},
+ {t:'all',x:'По кругу: какой суперсилой обладает игрок слева?'},
+ {t:'all',x:'Все замирают. Кто первым пошевелится, говорит комплимент каждому.',s:30},
  {t:'c',x:'Выбери, с кем открыл бы общий бизнес. Объясни почему.'},
  {t:'c',x:'Выбери, кто сегодня выглядит лучше всех. Скажи это, глядя в глаза.'},
  {t:'c',x:'Выбери, кто понимает тебя лучше всех, и скажи ему спасибо.'},
@@ -391,7 +442,22 @@ white: [
  {t:'c',x:'Выбери, с кем хочешь видеться чаще. Договоритесь о встрече прямо сейчас.'},
  {t:'c',x:'Выбери, кто из нас станет самым классным родителем. Объясни.'},
  {t:'c',x:'Выбери, кому доверил бы ключи от своей квартиры на месяц.'},
- {t:'c',x:'Выбери, с кем из нас было бы не страшно в любой передряге.'}
+ {t:'c',x:'Выбери, с кем из нас было бы не страшно в любой передряге.'},
+ {t:'c',x:'Выбери, у кого лучший вкус в музыке. Пусть включит один трек.'},
+ {t:'c',x:'Выбери, кого бы ты взял напарником в шоу «Кто хочет стать миллионером».'},
+ {t:'c',x:'Выбери того, кто сегодня заслуживает подарка. Отдай ему 1 своё очко.'},
+ {t:'q',a18:1,x:'Кто из присутствующих тебе нравился сильнее, чем ты показывал?'},
+ {t:'q',a18:1,x:'Какое у тебя было самое романтичное свидание?'},
+ {t:'q',a18:1,x:'Что тебя сразу привлекает в человеке?'},
+ {t:'q',a18:1,x:'Как прошёл твой первый поцелуй?'},
+ {t:'a',a18:1,x:'Поцелуй {p} в щёку и скажи, что в нём самое привлекательное.'},
+ {t:'a',a18:1,x:'Медленный танец с {p}.',s:45},
+ {t:'a',a18:1,x:'Прошепчи {p} на ухо самый лестный комплимент, какой придумаешь.'},
+ {t:'a',a18:1,x:'Сыграйте с {p} сцену знакомства в баре. Флиртуй по полной.',s:60},
+ {t:'all',a18:1,x:'Все по кругу: самая привлекательная черта игрока слева.'},
+ {t:'c',a18:1,x:'Выбери, с кем пошёл бы на свидание, если бы все были свободны.'},
+ {t:'c',a18:1,x:'Выбери самого обаятельного за столом. Посиди у него на коленях до своего следующего хода.'},
+ {t:'c',a18:1,x:'Выбери, кому бы ты доверил организовать твоё идеальное свидание.'}
 ],
 black: [
  {t:'q',x:'Кто из нас чаще всех опаздывает и что ты об этом думаешь?'},
@@ -407,27 +473,59 @@ black: [
  {t:'q',x:'Что ты на самом деле думаешь о подарке, который {p} дарил тебе последним?'},
  {t:'q',x:'В чём ты лучше, чем {p}? Назови три вещи.'},
  {t:'q',x:'Что ты на самом деле думаешь о партнёре {p}? Если его нет — о бывшем.'},
+ {t:'q',x:'Какую самую большую ложь ты говорил кому-то из нас?'},
+ {t:'q',x:'Кому из присутствующих ты завидуешь и в чём?'},
+ {t:'q',x:'На кого из нас ты обижен прямо сейчас? За что?'},
+ {t:'q',x:'Чьё мнение в этой компании ты обычно пропускаешь мимо ушей?'},
+ {t:'q',x:'За что тебе до сих пор стыдно перед кем-то из нас?'},
+ {t:'q',x:'Кто из нас тебя бесил при первой встрече?'},
+ {t:'q',x:'Какой твой самый подлый поступок в жизни?'},
+ {t:'q',x:'Что бы ты изменил во внешности {p}, если бы мог?'},
+ {t:'q',x:'Кого из нас ты бы не позвал на свою свадьбу?'},
+ {t:'q',x:'Когда ты последний раз врал, чтобы не встречаться с нами?'},
+ {t:'q',x:'Кто из присутствующих, по-твоему, добьётся меньше всех? Почему?'},
+ {t:'q',x:'Что о тебе думают люди, и что из этого правда?'},
+ {t:'q',x:'Какую тайну {p} ты знаешь, но не можешь рассказать? Намекни.'},
+ {t:'q',x:'Кто из нас самый жадный? Пример обязателен.'},
+ {t:'q',x:'Какой поступок {p} ты так и не простил?'},
  {t:'a',x:'Дай {p} честный совет, который этот человек точно не хочет слышать.'},
  {t:'a',x:'Покажи всем последние 5 фото в галерее.'},
- {t:'a',x:'Спародируй {p} так, чтобы все узнали. Не жалей.'},
+ {t:'a',x:'Спародируй {p} так, чтобы все узнали. Не жалей.',s:30},
  {t:'a',x:'Прочитай вслух последнее сообщение, которое ты отправил.'},
- {t:'a',x:'{p} выбирает контакт в твоём телефоне. Позвони и скажи, что скучаешь.'},
+ {t:'a',x:'{p} выбирает контакт в твоём телефоне. Позвони и скажи, что скучаешь.',s:60},
  {t:'a',x:'Поставь на аватарку фото, которое выберет {p}. На час.'},
  {t:'a',x:'Расскажи про {p} забавную историю, которую этот человек просил не рассказывать.'},
- {t:'a',x:'Прожарка: 30 секунд подкалывай {p}. Потом {p} отвечает тем же.'},
- {t:'a',x:'Отдай {p} свой телефон с открытой галереей на одну минуту.'},
+ {t:'a',x:'Прожарка: подкалывай {p}, пока идёт время. Потом {p} отвечает тем же.',s:30},
+ {t:'a',x:'Отдай {p} свой телефон с открытой галереей.',s:60},
  {t:'a',x:'Покажи историю поиска в браузере за сегодня.'},
  {t:'a',x:'Повтори любимую фразу {p} голосом, который этот человек выберет.'},
- {t:'a',x:'Назови игрока, который сегодня больше всех старается понравиться.'},
+ {t:'a',x:'{p} пишет сообщение с твоего телефона любому контакту. Ты не видишь текст, пока оно не отправлено.',s:60},
+ {t:'a',x:'Опубликуй в сторис фото, которое выберет {p}. Не удалять час.'},
+ {t:'a',x:'Покажи всем переписку с последним человеком, которому писал. Пролистай вверх 10 сообщений.'},
+ {t:'a',x:'Говори только правду, пока идёт время. Все задают тебе любые вопросы.',s:60},
+ {t:'a',x:'Отдай {p} одно своё очко. Просто так.'},
+ {t:'a',x:'Позвони бывшему или бывшей и спроси, как дела.',s:60},
+ {t:'a',x:'Пусть {p} нарисует что угодно у тебя на руке ручкой. До конца вечера не смывать.',s:30},
+ {t:'a',x:'Съешь ложку того, что выберет {p} из того, что есть на столе или в холодильнике.'},
+ {t:'a',x:'Расскажи свой самый позорный момент в деталях.',s:60},
+ {t:'a',x:'Сделай 20 приседаний, пока {p} комментирует, как спортивный комментатор.',s:45},
+ {t:'a',x:'Отдай телефон соседу справа. Он показывает всем любые 3 твоих фото на выбор.'},
+ {t:'a',x:'Прочитай вслух последние 3 своих голосовых в любом чате. Да, включи их.'},
+ {t:'a',x:'До своего следующего хода говори только шёпотом.'},
  {t:'all',x:'На счёт три все показывают на самого скучного. Он тянет ещё одну чёрную.'},
  {t:'all',x:'По кругу: каждый называет худшую привычку игрока справа.'},
  {t:'all',x:'Голосование: кто первым пропадёт из компании ради отношений?'},
  {t:'all',x:'На счёт три все показывают на того, кто чаще всех выбалтывает чужие секреты.'},
  {t:'all',x:'Голосование: кто самый эгоистичный за столом? Победитель теряет 1 очко.'},
- {t:'all',x:'«Я никогда не…» — ведёт {p}. Кто это делал, теряет 1 очко.'},
+ {t:'all',x:'«Я никогда не…» — ведёт {p}. Кто это делал, теряет 1 очко.',s:90},
  {t:'all',x:'Голосование: кто чаще всех даёт ужасные советы?'},
  {t:'all',x:'Каждый признаётся, на кого из присутствующих хоть раз обижался.'},
- {t:'all',x:'Все пишут имя самого раздражающего игрока на бумажке. {p} читает вслух.'},
+ {t:'all',x:'Все пишут имя самого раздражающего игрока на бумажке. {p} читает вслух.',s:30},
+ {t:'all',x:'Рейтинг: расставьте всех от самого честного до самого лживого. Спорить можно.',s:90},
+ {t:'all',x:'Голосование: у кого самый ужасный вкус в партнёрах? Он объясняется.'},
+ {t:'all',x:'Все кладут телефоны в центр экраном вверх. Кому первому придёт сообщение — читает вслух.',s:120},
+ {t:'all',x:'По кругу: что тебя бесит в игроке слева? Отказ — минус 1 очко.'},
+ {t:'all',x:'Голосование: кто из нас первым предаст в зомби-апокалипсисе?'},
  {t:'c',x:'Выбери, кто из нас дольше всех останется одиноким. Объясни.'},
  {t:'c',x:'Выбери, кому бы ты не одолжил деньги. Почему?'},
  {t:'c',x:'Выбери самого фальшивого за столом. Приведи пример.'},
@@ -437,11 +535,60 @@ black: [
  {t:'c',x:'Выбери, чей бывший был самым неудачным выбором.'},
  {t:'c',x:'Выбери, кто сильнее всех изменился за год. И не в лучшую сторону.'},
  {t:'c',x:'Выбери, кто из нас хуже всех хранит обещания.'},
- {t:'c',x:'Выбери, чьё мнение ты обычно пропускаешь мимо ушей.'}
+ {t:'c',x:'Выбери, кого бы ты оставил на необитаемом острове одного.'},
+ {t:'c',x:'Выбери, кто из нас самый двуличный. Он тянет ещё одну чёрную.'},
+ {t:'c',x:'Выбери, кто здесь самый ленивый, и дай ему задание на 30 секунд.',s:30},
+ {t:'c',x:'Выбери, у кого из нас худшие шутки. Пусть расскажет одну.'},
+ {t:'c',x:'Выбери, чью жизнь ты бы не хотел прожить ни за какие деньги.'},
+ {t:'c',x:'Выбери, кто из нас больше всех притворяется. Объясни при всех.'},
+ {t:'c',x:'Выбери жертву: она отвечает на любые 3 вопроса от тебя. Только правду.'},
+ {t:'q',a18:1,x:'С кем из присутствующих ты бы переспал, если бы никто не узнал?'},
+ {t:'q',a18:1,x:'Какая твоя самая смелая фантазия, которую можно рассказать вслух?'},
+ {t:'q',a18:1,x:'Самое неловкое, что случалось с тобой в постели?'},
+ {t:'q',a18:1,x:'Сколько у тебя было партнёров? Остальные угадывают, прежде чем ответишь.'},
+ {t:'q',a18:1,x:'Ты когда-нибудь изменял или тебе изменяли? Расскажи.'},
+ {t:'q',a18:1,x:'Где было самое странное место, где ты целовался или больше?'},
+ {t:'q',a18:1,x:'Кто из присутствующих, по-твоему, лучше всех целуется?'},
+ {t:'q',a18:1,x:'О чём ты врал партнёру чаще всего?'},
+ {t:'q',a18:1,x:'Что ты никогда не попробуешь в отношениях, даже если попросят?'},
+ {t:'q',a18:1,x:'Какое твоё самое позорное сообщение бывшему или бывшей?'},
+ {t:'q',a18:1,x:'Был ли у тебя роман, о котором никто из нас не знает?'},
+ {t:'q',a18:1,x:'Оцени по 10-балльной шкале внешность каждого за столом. Вслух.'},
+ {t:'q',a18:1,x:'Чей бывший или бывшая из этой компании тебе нравился?'},
+ {t:'q',a18:1,x:'Что тебя заводит больше всего?'},
+ {t:'a',a18:1,x:'Сними один предмет одежды. Обувь и аксессуары не считаются.'},
+ {t:'a',a18:1,x:'Поцелуй {p}. Куда — решает {p}.'},
+ {t:'a',a18:1,x:'Станцуй для {p} самый соблазнительный танец, на какой способен.',s:45},
+ {t:'a',a18:1,x:'Покажи последнее фото, которое ты удалил.'},
+ {t:'a',a18:1,x:'Напиши бывшему или бывшей «я скучаю». Сообщение не удалять.'},
+ {t:'a',a18:1,x:'Опиши свой идеальный секс тремя словами.'},
+ {t:'a',a18:1,x:'Изобрази, как ты флиртуешь, когда кто-то очень нравится. На {p}.',s:30},
+ {t:'a',a18:1,x:'Дай {p} поставить тебе засос или поцелуй на шею. Или отказ.'},
+ {t:'a',a18:1,x:'Сядь на колени к {p} и сиди так до своего следующего хода.'},
+ {t:'a',a18:1,x:'Покажи свой самый откровенный лайк или подписку в соцсетях.'},
+ {t:'a',a18:1,x:'Расскажи свой самый горячий сон, где был кто-то из знакомых. Имя можно не называть.',s:60},
+ {t:'a',a18:1,x:'Издавай самый страстный стон, на какой способен. Громко.',s:10},
+ {t:'a',a18:1,x:'Дай {p} пролистать твой список чатов. Он может открыть любой один.',s:60},
+ {t:'a',a18:1,x:'Обменяйся с {p} одним предметом одежды до конца игры.'},
+ {t:'a',a18:1,x:'Лизни шею {p} или съешь что-то с его руки без помощи своих рук.'},
+ {t:'all',a18:1,x:'«Я никогда не…» 18+: каждый по очереди, кто делал — теряет 1 очко.',s:120},
+ {t:'all',a18:1,x:'Голосование: кто за столом самый горячий? Все аргументируют.'},
+ {t:'all',a18:1,x:'Бутылочка: раскрутите телефон в центре. На кого укажет верх — целует того, на кого низ.'},
+ {t:'all',a18:1,x:'Голосование: у кого было больше всех партнёров? Он подтверждает или опровергает.'},
+ {t:'all',a18:1,x:'Все по очереди называют самую странную вещь, которая их заводит.'},
+ {t:'all',a18:1,x:'Каждый пишет на бумажке, с кем из присутствующих поцеловался бы. {p} читает вслух.',s:45},
+ {t:'c',a18:1,x:'Выбери, с кем из присутствующих ты бы провёл ночь в одном номере.'},
+ {t:'c',a18:1,x:'Выбери, кто здесь самый сексуальный. Сделай ему массаж.',s:60},
+ {t:'c',a18:1,x:'Выбери, кто, по-твоему, самый неопытный в постели. Объясни.'},
+ {t:'c',a18:1,x:'Выбери того, кого поцеловал бы прямо сейчас. Поцелуй — или отказ.'},
+ {t:'c',a18:1,x:'Выбери, чью переписку с партнёром ты хотел бы прочитать.'},
+ {t:'c',a18:1,x:'Выбери, кто из нас скорее всего изменит. Скажи в лицо.'},
+ {t:'c',a18:1,x:'Выбери пару за столом, которая лучше всего смотрелась бы вместе. Пусть обнимутся.',s:15}
 ]};
 const TYPE = {q:'Вопрос', a:'Действие', all:'Всем', c:'Выбор'};
+const adultCount = () => DECK.white.concat(DECK.black).filter(c=>c.a18).length;
 const ART = {white:{q:'sun',a:'heart',all:'fire',c:'flower'}, black:{q:'eye',a:'bolt',all:'bomb',c:'snake'}};
-const ROMAN = n => {const r=[['L',50],['XL',40],['X',10],['IX',9],['V',5],['IV',4],['I',1]];let s='';for(const[k,v]of r)while(n>=v){s+=k;n-=v}return s};
+const ROMAN = n => {const r=[['C',100],['XC',90],['L',50],['XL',40],['X',10],['IX',9],['V',5],['IV',4],['I',1]];let s='';for(const[k,v]of r)while(n>=v){s+=k;n-=v}return s};
 
 /* ---------------- РИСУНКИ ---------------- */
 function rays(cx,cy,r1,r2,n,offset=0){let d='';for(let i=0;i<n;i++){const a=(i/n)*Math.PI*2+offset;d+=`M${(cx+Math.cos(a)*r1).toFixed(1)} ${(cy+Math.sin(a)*r1).toFixed(1)}L${(cx+Math.cos(a)*r2).toFixed(1)} ${(cy+Math.sin(a)*r2).toFixed(1)}`}return d}
@@ -476,7 +623,7 @@ function backInner(kind){
 function faceHTML(deck, idx){
   const c = DECK[deck][idx];
   return `<div class="face ${deck} front">${frame()}<div class="face-in">
-    <div class="top"><span>${deck==='white'?'клятва':'проклятие'}</span><span>${ROMAN(idx+1)}</span></div>
+    <div class="top"><span>${deck==='white'?'клятва':'проклятие'}</span><span class="badges">${c.a18?'<span class="badge r">18+</span>':''}${c.s?`<span class="badge">${c.s} с</span>`:''}<span>${ROMAN(idx+1)}</span></span></div>
     <div class="art">${ink(ART[deck][c.t])}</div>
     <div class="center"><div class="ttl">${TYPE[c.t]}</div><div class="sub">${deck==='white'?'+1 ОЧКО':'+2 ОЧКА'}</div></div>
   </div></div>`;
@@ -498,6 +645,7 @@ const S = {
   mode: store.get('mode','mix'),
   target: store.get('target',10),
   sound: store.get('sound',true),
+  adult: store.get('adult',false),
   game:null
 };
 let app = document.getElementById('app');
@@ -524,6 +672,7 @@ function haptic(kind){
   if(!tg||!tg.HapticFeedback) return;
   try{
     if(kind==='win') tg.HapticFeedback.notificationOccurred('success');
+    else if(kind==='buzz') tg.HapticFeedback.notificationOccurred('error');
     else if(kind==='warn') tg.HapticFeedback.notificationOccurred('warning');
     else tg.HapticFeedback.impactOccurred(kind==='shuffle'?'medium':kind==='flip'?'rigid':'light');
   }catch(e){}
@@ -538,6 +687,10 @@ function sfx(kind){
   try{
     actx = actx || new (window.AudioContext||window.webkitAudioContext)();
     const t = actx.currentTime;
+    if(kind==='tick'||kind==='buzz'){
+      const o=actx.createOscillator(),g=actx.createGain(),long=kind==='buzz';o.type=long?'sawtooth':'square';o.frequency.value=long?160:1100;
+      g.gain.setValueAtTime(long?.12:.05,t);g.gain.exponentialRampToValueAtTime(.001,t+(long?.7:.05));o.connect(g).connect(actx.destination);o.start(t);o.stop(t+(long?.75:.06));return;
+    }
     if(kind==='tap'){
       const o=actx.createOscillator(),g=actx.createGain();o.type='triangle';o.frequency.setValueAtTime(520,t);o.frequency.exponentialRampToValueAtTime(260,t+.08);
       g.gain.setValueAtTime(.08,t);g.gain.exponentialRampToValueAtTime(.001,t+.1);o.connect(g).connect(actx.destination);o.start(t);o.stop(t+.12);return;
@@ -628,6 +781,7 @@ function setup(){
       <div class="label"><h2 class="h2">До скольких очков</h2></div>
       <div class="seg" id="seg">${[7,10,15].map(n=>`<button data-n="${n}" aria-pressed="${S.target===n}">${n}</button>`).join('')}</div>
     </div>
+    <button class="toggle" id="adult" aria-pressed="${S.adult}"><span><span class="t">Режим 18+</span><span class="d" style="display:block">+${adultCount()} откровенных и жёстких карт в обе колоды</span></span><span class="sw" aria-hidden="true"></span></button>
     <div class="spacer"></div>
     <button class="btn solid" id="go"><span>Разложить карты</span></button>
   </section>`;
@@ -641,27 +795,55 @@ function setup(){
   $('#addf').onsubmit = e => {e.preventDefault();const v=$('#name-in').value.trim();if(!v)return;if(S.players.includes(v)){toast('Такое имя уже есть');return}if(S.players.length>=12){toast('Максимум 12 игроков');return}S.players.push(v);store.set('players',S.players);$('#name-in').value='';sfx('tap');renderPl()};
   $('#modes').querySelectorAll('.mode').forEach(b=>b.onclick=()=>{S.mode=b.dataset.m;store.set('mode',S.mode);sfx('flip');$('#modes').querySelectorAll('.mode').forEach(x=>x.setAttribute('aria-pressed',x===b));const md=$('#md');md.textContent=MODES[S.mode].desc;md.style.animation='none';md.offsetHeight;md.style.animation=''});
   $('#seg').querySelectorAll('button').forEach(b=>b.onclick=()=>{S.target=+b.dataset.n;store.set('target',S.target);sfx('tap');$('#seg').querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x===b))});
+  $('#adult').onclick = e => {
+    const btn=e.currentTarget;
+    const set=v=>{S.adult=v;store.set('adult',v);btn.setAttribute('aria-pressed',v);sfx('flip')};
+    if(S.adult){set(false);return}
+    sfx('tap');
+    const bg=document.createElement('div');bg.className='sheet-bg';
+    bg.innerHTML=`<div class="sheet" role="dialog" aria-label="Режим 18+"><h2 class="h2">Только для взрослых</h2><p>В колоды добавятся вопросы про секс и отношения, поцелуи, раздевание и жёсткие задания с телефонами и бывшими.</p><p>Включайте, только если всем за столом есть 18 и все согласны. Стоп-слово «пас» работает всегда.</p><div class="btn-row"><button class="btn" id="a-no"><span>Не сейчас</span></button><button class="btn seal" id="a-yes"><span>Всем есть 18</span></button></div></div>`;
+    document.body.appendChild(bg);
+    bg.onclick=ev=>{if(ev.target===bg)bg.remove()};
+    bg.querySelector('#a-no').onclick=()=>bg.remove();
+    bg.querySelector('#a-yes').onclick=()=>{bg.remove();set(true)};
+  };
   $('#back').onclick = () => {sfx('tap');home()};
   setBack(() => {sfx('tap');home()});
   $('#go').onclick = () => {sfx('shuffle');startGame()};
 }
 
 /* ---------------- ИГРА ---------------- */
+// Карты, которые уже выпадали в прошлых партиях, кладутся в низ колоды: сначала выпадает всё новое
+const cardKey = (deck,i) => {let h=5381;const t=deck+DECK[deck][i].x;for(let k=0;k<t.length;k++)h=(h*33+t.charCodeAt(k))|0;return (h>>>0).toString(36)};
+let seen = new Set(store.get('seen',[]));
+function markSeen(deck,i){
+  seen.add(cardKey(deck,i));
+  const all=[...seen]; if(all.length>600) seen=new Set(all.slice(-600));
+  store.set('seen',[...seen]);
+}
+const active = deck => [...DECK[deck].keys()].filter(i=>S.adult||!DECK[deck][i].a18);
+function buildPile(refs){
+  const fresh=[],old=[];
+  refs.forEach(r=>(seen.has(cardKey(r[0],r[1]))?old:fresh).push(r));
+  if(!fresh.length){seen=new Set([...seen].filter(k=>!refs.some(r=>cardKey(r[0],r[1])===k)));store.set('seen',[...seen]);return shuffle(old)}
+  return shuffle(old).concat(shuffle(fresh)); // pop() берёт с конца — сначала новые
+}
+const refsOf = deck => deck==='mix' ? active('white').map(i=>['white',i]).concat(active('black').map(i=>['black',i])) : active(deck).map(i=>[deck,i]);
 function startGame(){
   S.game = {
     players: S.players.map(n=>({name:n,pts:0,w:0,b:0,r:0})),
     turn: 0, round: 1,
-    piles: {white:shuffle([...DECK.white.keys()]), black:shuffle([...DECK.black.keys()])},
+    piles: {white:buildPile(refsOf('white')), black:buildPile(refsOf('black'))},
     mixPile: null, current:null, forced:false
   };
-  if(S.mode==='mix') S.game.mixPile = shuffle([...DECK.white.keys()].map(i=>['white',i]).concat([...DECK.black.keys()].map(i=>['black',i])));
+  if(S.mode==='mix') S.game.mixPile = buildPile(refsOf('mix'));
   game();
 }
 function drawFrom(deck){
   const g=S.game;
-  if(deck==='mix'){ if(!g.mixPile.length) g.mixPile = shuffle([...DECK.white.keys()].map(i=>['white',i]).concat([...DECK.black.keys()].map(i=>['black',i]))); return g.mixPile.pop(); }
-  if(!g.piles[deck].length) g.piles[deck]=shuffle([...DECK[deck].keys()]);
-  return [deck, g.piles[deck].pop()];
+  if(deck==='mix'){ if(!g.mixPile.length) g.mixPile = buildPile(refsOf('mix')); return g.mixPile.pop(); }
+  if(!g.piles[deck].length) g.piles[deck]=buildPile(refsOf(deck));
+  return g.piles[deck].pop();
 }
 function deckList(){
   if(S.game.forced) return ['black'];
@@ -727,9 +909,11 @@ function reveal(){
   const g=S.game,c=g.current,card=DECK[c.deck][c.idx];
   const w=c.deck==='white';
   const refuseRule = w ? 'Отказ: вместо этой карты тянешь проклятие.' : 'Отказ: минус 1 очко.';
+  markSeen(c.deck,c.idx);
   $('#bottom').innerHTML = `<div class="reading">
-      <div class="meta"><span class="mono">${w?'Клятва':'Проклятие'} · ${TYPE[card.t]}</span><span class="mono muted">${ROMAN(c.idx+1)} · ${w?'+1':'+2'}</span></div>
+      <div class="meta"><span class="mono">${w?'Клятва':'Проклятие'} · ${TYPE[card.t]}${card.a18?' · <span style="color:var(--seal)">18+</span>':''}</span><span class="mono muted">${ROMAN(c.idx+1)} · ${w?'+1':'+2'}</span></div>
       <p class="text">${fill(card.x)}</p>
+      ${card.s?`<button class="timer" id="tmr" aria-label="Запустить таймер на ${card.s} секунд"><span class="ring"><svg viewBox="0 0 48 48"><circle class="bg" cx="24" cy="24" r="20"/><circle class="fg" cx="24" cy="24" r="20"/></svg><span class="num" id="tnum">${card.s}</span></span><span class="lbl" id="tlbl">Запустить таймер · ${card.s} с</span></button>`:''}
       <p class="rule">${refuseRule}</p>
     </div>
     <div class="btn-row" style="margin-top:12px">
@@ -738,8 +922,31 @@ function reveal(){
     </div>`;
   $('#yes').onclick = e => resolve(true,e.currentTarget);
   $('#no').onclick = e => resolve(false,e.currentTarget);
+  if(card.s) $('#tmr').onclick = () => startTimer(card.s);
+}
+let timerId = null;
+function stopTimer(){clearInterval(timerId);timerId=null}
+function startTimer(total){
+  const b=$('#tmr'); if(!b) return;
+  if(timerId){stopTimer();b.classList.remove('run','hurry');$('#tnum').textContent=total;b.querySelector('.fg').style.strokeDashoffset=0;$('#tlbl').textContent=`Запустить снова · ${total} с`;return}
+  let left=total; sfx('tap');
+  b.classList.add('run'); b.classList.remove('over');
+  $('#tlbl').textContent='Идёт время… нажми, чтобы остановить';
+  const tickUI=()=>{
+    const el=$('#tmr'); if(!el){stopTimer();return}
+    $('#tnum').textContent=left;
+    el.querySelector('.fg').style.strokeDashoffset=(125.66*(1-left/total)).toFixed(2);
+    el.classList.toggle('hurry',left<=5&&left>0);
+  };
+  tickUI();
+  timerId=setInterval(()=>{
+    left--; tickUI();
+    if(left>0&&left<=5) sfx('tick');
+    if(left<=0){stopTimer();const el=$('#tmr');if(el){el.classList.remove('run','hurry');el.classList.add('over');$('#tlbl').textContent='Время вышло!'}sfx('buzz');toast('Время вышло!')}
+  },1000);
 }
 function resolve(done,btn){
+  stopTimer();
   const g=S.game,c=g.current,me=g.players[g.turn],w=c.deck==='white';
   let next=true;
   if(done){const add=w?1:2;me.pts+=add;w?me.w++:me.b++;floatPlus('+'+add,btn);sfx('tap')}
@@ -768,7 +975,7 @@ function confirmQuit(){
   document.body.appendChild(bg);
   bg.onclick=e=>{if(e.target===bg)bg.remove()};
   bg.querySelector('#stay').onclick=()=>bg.remove();
-  bg.querySelector('#end').onclick=()=>{bg.remove();finish()};
+  bg.querySelector('#end').onclick=()=>{bg.remove();stopTimer();finish()};
 }
 
 /* ---------------- ФИНАЛ ---------------- */
@@ -799,14 +1006,17 @@ function finish(){
 
 /* ---------------- КОЛЛЕКЦИЯ ---------------- */
 function collection(deck){
+  const list = DECK[deck].map((c,i)=>[c,i]).filter(([c])=>S.adult||!c.a18);
+  const n = d => DECK[d].filter(c=>S.adult||!c.a18).length;
   app.innerHTML = `<section class="screen">
-    <div class="topbar"><button class="icon-btn" id="back" aria-label="Назад">${backIcon}</button><span class="mono">Колоды</span><span class="mono muted" style="text-align:right">${DECK.white.length+DECK.black.length}</span></div>
+    <div class="topbar"><button class="icon-btn" id="back" aria-label="Назад">${backIcon}</button><span class="mono">Колоды</span><span class="mono muted" style="text-align:right">${n('white')+n('black')}</span></div>
     <div class="tabs" role="tablist">
-      <button role="tab" aria-selected="${deck==='white'}" data-d="white">Клятва · ${DECK.white.length}</button>
-      <button role="tab" aria-selected="${deck==='black'}" data-d="black">Проклятие · ${DECK.black.length}</button>
+      <button role="tab" aria-selected="${deck==='white'}" data-d="white">Клятва · ${n('white')}</button>
+      <button role="tab" aria-selected="${deck==='black'}" data-d="black">Проклятие · ${n('black')}</button>
     </div>
     <p class="muted" style="margin:0">${deck==='white'?'Белая колода сплачивает: признания, комплименты, тёплые задания. За каждую — 1 очко.':'Чёрная колода сеет раздор: неудобные вопросы и задания. За каждую — 2 очка, за отказ минус одно.'}</p>
-    <div class="list">${DECK[deck].map((c,i)=>`<div class="row ${deck==='white'?'light':'dark'}" style="animation-delay:${Math.min(i*25,500)}ms"><div class="ic">${ink(ART[deck][c.t])}</div><div><span class="mono">${ROMAN(i+1)} · ${TYPE[c.t]}</span><p>${esc(c.x).replace(/\{p\}/g,'<u>игрок</u>')}</p></div></div>`).join('')}</div>
+    ${S.adult?'':`<p class="muted" style="margin:0;font-size:16px">Ещё ${adultCount()} карт откроются в режиме 18+ (включается при настройке партии).</p>`}
+    <div class="list">${list.map(([c,i],k)=>`<div class="row ${deck==='white'?'light':'dark'}" style="animation-delay:${Math.min(k*25,500)}ms"><div class="ic">${ink(ART[deck][c.t])}</div><div><span class="mono">${ROMAN(i+1)} · ${TYPE[c.t]}${c.s?` · ${c.s} с`:''}${c.a18?' · <span class="a18">18+</span>':''}</span><p>${esc(c.x).replace(/\{p\}/g,'<u>игрок</u>')}</p></div></div>`).join('')}</div>
   </section>`;
   $('#back').onclick=()=>{sfx('tap');home()};
   setBack(()=>{sfx('tap');home()});
@@ -820,6 +1030,8 @@ function rules(){
    ['Выберите режим','Мир — только белая колода. Война — только чёрная. Смесь — обе в одной куче. Выбор — каждый сам решает, какую тянуть.'],
    ['Тяни и переворачивай','В свой ход коснись колоды. Прочитай карту вслух. Если на ней чьё-то имя — это задание про этого человека.'],
    ['Делай или откажись','Выполнил — забирай очки. Отказ от белой карты: тянешь чёрную. Отказ от чёрной: минус очко.'],
+   ['Таймер','На картах со значком секунд есть таймер. Запусти его — последние 5 секунд он тикает, потом звенит. Не успел — задание не засчитано.'],
+   ['Режим 18+','Включается при настройке партии. Добавляет откровенные и жёсткие карты. Только если всем за столом есть 18.'],
    ['Стоп-слово','Любой может сказать «пас» без штрафа, если задание задевает всерьёз. Игра для смеха, а не для обид.']
   ];
   app.innerHTML = `<section class="screen">
